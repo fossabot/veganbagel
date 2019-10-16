@@ -31,9 +31,8 @@ function estimateVolumechanges(niiInput, templatePath, sex, age);
 
   % Use the 4 images from above as input
   matlabbatch{1}.spm.util.imcalc.input = imagelist;
-  % Desired output filename
+  % Desired output filename and directory
   matlabbatch{1}.spm.util.imcalc.output = strcat(niiName, '_zmap.nii');
-  % .. and output directory
   matlabbatch{1}.spm.util.imcalc.outdir = cellstr(fullfile(niiPath));
   % Do not read the images into a data matrix, read them in seperate variables (i1, i2, ..., iN)
   matlabbatch{1}.spm.util.imcalc.options.dmtx = 0;
@@ -48,6 +47,27 @@ function estimateVolumechanges(niiInput, templatePath, sex, age);
   spm_jobman('run', matlabbatch);
 
   %%%
+  %%% "Off-center and scale" for colour coding later
+  %%%
+
+  % Load the defaults into matlabbatch
+  load(fullfile(pwd, 'batches/imcalc.mat'));
+
+  % Use the previously generated zmap
+  matlabbatch{1}.spm.util.imcalc.input = cellstr(fullfile(niiPath, strcat(niiName, '_zmap.nii')));
+  % Desired output filename and directory
+  matlabbatch{1}.spm.util.imcalc.output = strcat(niiName, '_zmap_offcenter_scaled.nii');
+  matlabbatch{1}.spm.util.imcalc.outdir = cellstr(fullfile(niiPath));
+  % Do not read the images into a data matrix, read them in seperate variables (i1, i2, ..., iN)
+  matlabbatch{1}.spm.util.imcalc.options.dmtx = 0;
+
+  % In order to facilitate the colour-coding of the zmap later, we first scale by 1000. Furthermore, ImageMagick
+  % cannot handle negative pixel values, so, assuming we're dealing with a 16 bit file, we add (65536/2)-1 to
+  % each voxel
+  matlabbatch{1}.spm.util.imcalc.expression = 'i1 .* 1000';
+  spm_jobman('run', matlabbatch);
+
+  %%%
   %%% Transform the z-map into the subject space
   %%%
 
@@ -57,7 +77,7 @@ function estimateVolumechanges(niiInput, templatePath, sex, age);
   % Define the path/filename to the inverse deformation field (i.e. MNI space to subject space)
   matlabbatch{1}.spm.util.defs.comp{1}.def = cellstr(fullfile(niiPath, 'mri', ['iy_' niiName '.nii']));
   % The z-map to transform into subject space
-  matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = cellstr(fullfile(niiPath, [niiName, '_zmap.nii']));
+  matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = cellstr(fullfile(niiPath, [niiName, '_zmap_offcenter_scaled.nii']));
 
   % Start the deformation
   spm_jobman('run', matlabbatch);

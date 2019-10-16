@@ -24,7 +24,7 @@ function estimateVolumechanges {
   ) || error "estimateVolumechanges failed"
   
   # Export the variable zmap, which contains the path and filename to the generated zmap for the subject
-  export zmap=$(echo $(dirname "${input_nii}")/w$(basename "${input_nii}" | sed -e 's/\.nii$/_zmap.nii/I'))
+  export zmap=$(echo $(dirname "${input_nii}")/w$(basename "${input_nii}" | sed -e 's/\.nii$/_zmap_offcenter_scaled.nii/I'))
 
   info "estimateVolumechanges done"
 }

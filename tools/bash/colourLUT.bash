@@ -149,7 +149,6 @@ function colourLUT {
     ${convert} \
       -depth ${depth} \
       "${tiff}" \
-      -rotate -90 \
       "${output_dir}/clut/clut.tiff" \
       -clut "${output_dir}/clut/clutted.tiff"
 
